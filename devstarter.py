@@ -1,3 +1,5 @@
+import subprocess
+from shutil import which
 from pathlib import Path
 
 
@@ -12,7 +14,6 @@ RED = "\033[91m"
 
 
 COMMON_FILES = {
-    "README.md": "# {project_name}\n\nGenerated with Dev-Starter-CLI.\n",
     ".gitignore": "__pycache__/\n*.pyc\n.env\n.venv/\nvenv/\nnode_modules/\ndist/\nbuild/\ncoverage/\n.dart_tool/\n.flutter-plugins\n.flutter-plugins-dependencies\n",
     ".env.example": "# Add environment variables here\n",
 }
@@ -50,6 +51,18 @@ TEMPLATES = {
         "label": "Create Python CLI project",
         "project_name": "python-cli-project",
         "description": "CLI app with src, commands, tests, config, and main entry point",
+        "requirements": [
+            "Python 3 installed",
+            "pip available if you want to add packages later",
+        ],
+        "creation_checks": [],
+        "run_steps": [
+            "python3 main.py",
+        ],
+        "troubleshooting": [
+            "If python3 is not found, install Python 3 and add it to PATH.",
+            "If imports fail, run commands from the project root.",
+        ],
         "dirs": [
             "src",
             "src/commands",
@@ -78,6 +91,19 @@ TEMPLATES = {
         "label": "Create Flask API project",
         "project_name": "flask-api-project",
         "description": "Flask API starter with routes, tests, settings, and health endpoint",
+        "requirements": [
+            "Python 3 installed",
+            "pip installed",
+        ],
+        "creation_checks": [],
+        "run_steps": [
+            "python3 -m pip install -r requirements.txt",
+            "python3 main.py",
+        ],
+        "troubleshooting": [
+            "If Flask is missing, install dependencies with pip.",
+            "If port 5000 is busy, stop the other process or change the port in main.py.",
+        ],
         "dirs": [
             "src",
             "src/routes",
@@ -117,6 +143,19 @@ TEMPLATES = {
         "label": "Create FastAPI project",
         "project_name": "fastapi-project",
         "description": "FastAPI service structure with router, tests, config, and app setup",
+        "requirements": [
+            "Python 3 installed",
+            "pip installed",
+        ],
+        "creation_checks": [],
+        "run_steps": [
+            "python3 -m pip install -r requirements.txt",
+            "uvicorn main:app --reload",
+        ],
+        "troubleshooting": [
+            "If uvicorn is missing, install dependencies with pip.",
+            "If the server does not start, confirm you are inside the project folder.",
+        ],
         "dirs": [
             "src",
             "src/routes",
@@ -155,6 +194,19 @@ TEMPLATES = {
         "label": "Create React project structure",
         "project_name": "react-project",
         "description": "React frontend layout with public, pages, components, assets, and config",
+        "requirements": [
+            "Node.js installed",
+            "npm installed",
+        ],
+        "creation_checks": [],
+        "run_steps": [
+            "npm install react react-dom react-scripts",
+            "npm start",
+        ],
+        "troubleshooting": [
+            "If npm is not found, install Node.js which includes npm.",
+            "If react-scripts is missing, run npm install first.",
+        ],
         "dirs": [
             "src",
             "src/components",
@@ -218,8 +270,28 @@ TEMPLATES = {
         "label": "Create Flutter clean architecture structure",
         "project_name": "flutter-clean-architecture-project",
         "description": "Flutter clean architecture folders for core, data, domain, and presentation",
+        "flutter_app_name": "flutter_clean_architecture_app",
+        "requirements": [
+            "Flutter SDK installed",
+            "Flutter added to PATH",
+            "Desktop support enabled if you want to run on PC",
+        ],
+        "creation_checks": [
+            {
+                "command": "flutter",
+                "message": "Flutter SDK is required. Install Flutter and add it to PATH.",
+            },
+        ],
+        "run_steps": [
+            "flutter pub get",
+            "flutter run -d windows",
+        ],
+        "troubleshooting": [
+            "If flutter is not found, install Flutter and add it to PATH.",
+            "If no desktop device appears, run flutter config --enable-windows-desktop or enable your target desktop platform.",
+            "If packages fail to resolve, run flutter pub get.",
+        ],
         "dirs": [
-            "lib",
             "lib/core",
             "lib/core/error",
             "lib/core/network",
@@ -237,21 +309,6 @@ TEMPLATES = {
             "config",
         ],
         "files": {
-            "requirements.txt": "",
-            "pubspec.yaml": (
-                "name: flutter_clean_architecture_app\n"
-                "description: Generated with Dev-Starter-CLI\n"
-                "publish_to: 'none'\n"
-                "version: 1.0.0+1\n\n"
-                "environment:\n"
-                "  sdk: '>=3.0.0 <4.0.0'\n\n"
-                "dependencies:\n"
-                "  flutter:\n"
-                "    sdk: flutter\n\n"
-                "dev_dependencies:\n"
-                "  flutter_test:\n"
-                "    sdk: flutter\n"
-            ),
             "lib/main.dart": (
                 "import 'package:flutter/material.dart';\n\n"
                 "void main() {\n"
@@ -294,11 +351,78 @@ def create_file(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def build_readme(project_name: str, template: dict[str, object]) -> str:
+    requirements = "\n".join(f"- {item}" for item in template["requirements"])
+    run_steps = "\n".join(f"```bash\n{step}\n```" for step in template["run_steps"])
+    troubleshooting = "\n".join(f"- {item}" for item in template["troubleshooting"])
+    return (
+        f"# {project_name}\n\n"
+        "Generated with Dev-Starter-CLI.\n\n"
+        "## Requirements\n\n"
+        f"{requirements}\n\n"
+        "## Run\n\n"
+        f"{run_steps}\n\n"
+        "## Troubleshooting\n\n"
+        f"{troubleshooting}\n"
+    )
+
+
+def create_project_readme(project_dir: Path, project_name: str, template: dict[str, object]) -> None:
+    create_file(project_dir / "README.md", build_readme(project_name, template))
+
+
+def missing_creation_requirements(template: dict[str, object]) -> list[str]:
+    missing = []
+    for check in template.get("creation_checks", []):
+        command = str(check["command"])
+        if which(command) is None:
+            missing.append(str(check["message"]))
+    return missing
+
+
+def print_stack_info(template: dict[str, object]) -> None:
+    print()
+    print(color(" Requirements:", CYAN))
+    for item in template["requirements"]:
+        print(color(f"  - {item}", DIM))
+    print(color(" If something breaks, check the generated README for run steps and troubleshooting.", DIM))
+
+
+def build_flutter_project(base_dir: Path, project_name: str, template: dict[str, object]) -> Path:
+    project_dir = base_dir / project_name
+    flutter_app_name = str(template["flutter_app_name"])
+    try:
+        result = subprocess.run(
+            ["flutter", "create", "--project-name", flutter_app_name, str(project_dir)],
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError as error:
+        raise RuntimeError("Flutter SDK not found in PATH.") from error
+
+    if result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip() or "Unknown Flutter error"
+        raise RuntimeError(message)
+
+    create_file(project_dir / ".env.example", COMMON_FILES[".env.example"])
+
+    for directory in template["dirs"]:
+        (project_dir / str(directory)).mkdir(parents=True, exist_ok=True)
+
+    for name, content in template["files"].items():
+        create_file(project_dir / str(name), str(content))
+
+    create_project_readme(project_dir, project_name, template)
+    return project_dir
+
+
 def build_project(base_dir: Path, project_name: str, template_key: str) -> Path:
     template = TEMPLATES[template_key]
+    if template_key == "5":
+        return build_flutter_project(base_dir, project_name, template)
+
     project_dir = base_dir / project_name
     project_dir.mkdir(parents=True, exist_ok=True)
-
     for name, content in COMMON_FILES.items():
         create_file(project_dir / name, content.format(project_name=project_name))
 
@@ -308,6 +432,7 @@ def build_project(base_dir: Path, project_name: str, template_key: str) -> Path:
     for name, content in template["files"].items():
         create_file(project_dir / name, content)
 
+    create_project_readme(project_dir, project_name, template)
     return project_dir
 
 
@@ -336,12 +461,30 @@ def main() -> None:
         return
 
     selected = TEMPLATES[choice]
+    print_stack_info(selected)
+    missing = missing_creation_requirements(selected)
+    if missing:
+        print()
+        print(color(" Missing required setup for project creation:", RED))
+        for item in missing:
+            print(color(f"  - {item}", YELLOW))
+        return
+
     project_name = selected["project_name"]
-    project_dir = build_project(Path.cwd(), project_name, choice)
+    try:
+        project_dir = build_project(Path.cwd(), project_name, choice)
+    except RuntimeError as error:
+        print()
+        print(color(" Project creation failed.", RED))
+        print(color(f" Reason: {error}", YELLOW))
+        print(color(" Open the generated README requirements/troubleshooting after fixing the environment.", DIM))
+        return
+
     print()
     print(color(" Project created successfully.", GREEN))
     print(color(f" Location: {project_dir}", CYAN))
     print(color(f" Stack: {selected['label']}", DIM))
+    print(color(" Open README.md inside the project for install, run, and troubleshooting help.", DIM))
 
 
 if __name__ == "__main__":

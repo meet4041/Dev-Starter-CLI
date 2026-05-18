@@ -33,11 +33,19 @@ Based on your selected option, the CLI creates a starter folder with common esse
 - source, config, and test folders
 - starter entry files like `main.py` or `main.dart`
 
+Each generated project `README.md` includes:
+
+- required tools and environment setup
+- basic run commands
+- troubleshooting hints if something breaks
+
 ## Run
 
 ```bash
 python3 devstarter.py
 ```
+
+The CLI also shows required environment setup before creation. If a required tool is missing, it stops early and tells the user what to install.
 
 ## Menu Preview
 
