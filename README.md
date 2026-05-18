@@ -1,15 +1,37 @@
 # Dev-Starter-CLI
 
-Simple Python CLI to generate starter project structures.
+Create starter project structures from one simple Python CLI.
 
-## Features
+Dev-Starter-CLI removes repetitive setup by generating ready-to-use project foundations for common stacks in seconds.
 
-- Python CLI project
-- Flask API project
-- FastAPI project
-- React project structure
-- Flutter clean architecture structure
-- Exit option
+## Highlights
+
+- Fast terminal-based project setup
+- Clean starter structure for multiple stacks
+- Good for learning, prototyping, and quick project bootstrapping
+- No external packages required
+
+## Templates
+
+| Option | Project Type |
+|--------|--------------|
+| 1 | Python CLI project |
+| 2 | Flask API project |
+| 3 | FastAPI project |
+| 4 | React project structure |
+| 5 | Flutter clean architecture structure |
+| 6 | Exit |
+
+## What It Generates
+
+Based on your selected option, the CLI creates a starter folder with common essentials such as:
+
+- `README.md`
+- `.gitignore`
+- `.env.example`
+- `requirements.txt`, `package.json`, or `pubspec.yaml`
+- source, config, and test folders
+- starter entry files like `main.py` or `main.dart`
 
 ## Run
 
@@ -17,7 +39,7 @@ Simple Python CLI to generate starter project structures.
 python3 devstarter.py
 ```
 
-## Menu
+## Menu Preview
 
 ```text
 1. Create Python CLI project
@@ -28,23 +50,8 @@ python3 devstarter.py
 6. Exit
 ```
 
-## Generated output
+Select an option and press Enter. The matching starter structure is created in the current directory.
 
-Depending on the selected option, the CLI creates a ready-to-use starter folder with common files such as:
+## Problem It Solves
 
-- `README.md`
-- `.gitignore`
-- `.env.example`
-- `requirements.txt` or `pubspec.yaml` or `package.json`
-- source folders
-- test folders
-- config folders
-- starter entry files
-
-## Example
-
-```bash
-python3 devstarter.py
-```
-
-Select an option and press Enter. The matching project starter structure will be created in the current directory.
+Developers often waste time recreating the same base folders and starter files again and again. Dev-Starter-CLI gives you a quick, consistent starting point so you can begin building immediately.
